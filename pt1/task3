@@ -1,0 +1,1 @@
+t="$*"; line=$(echo "$t" | sed 's/./-/g'); echo "+-$line-+"; echo "| $t |"; echo "+-$line-+"
