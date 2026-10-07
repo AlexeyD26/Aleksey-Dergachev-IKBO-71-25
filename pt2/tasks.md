@@ -26,6 +26,4 @@ dot -Tpng matplotlib.dot -o matplotlib.png
 dot -Tpng express.dot -o express.png
 ```
 
-![Matplotlib](matplotlib.png)
-
-![Express](express.png)
+![Matplotlib](matplotlib.png) ![Express](express.png)
