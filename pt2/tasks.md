@@ -18,3 +18,14 @@ tar -xOf express-5.2.1.tgz package/package.json
 ```bash
 git clone --depth 1 https://github.com/expressjs/express.git express-source
 ```
+
+### Задание 3
+
+```bash
+dot -Tpng matplotlib.dot -o matplotlib.png
+dot -Tpng express.dot -o express.png
+```
+
+![Matplotlib](matplotlib.png)
+
+![Express](express.png)
