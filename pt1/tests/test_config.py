@@ -14,6 +14,8 @@ class ConfigTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.folder = Path(self.temp.name)
+        for name in ["from config.json", "from-cli.json", "new.json"]:
+            (self.folder / name).write_text("{}", encoding="utf-8")
         self.script = self.folder / "start script.txt"
         self.script.write_text("ls from-script\nexit\n", encoding="utf-8")
         self.config = self.folder / "config.xml"

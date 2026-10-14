@@ -1,0 +1,11 @@
+{
+    "home": {
+        "student": {
+            "docs": {
+                "note.txt": "Tm90ZXMK",
+                "nested file.txt": "RmlsZSB3aXRoIGEgc3BhY2UK"
+            }
+        }
+    },
+    "empty": {}
+}

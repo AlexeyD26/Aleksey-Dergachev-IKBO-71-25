@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 from config import read_args, show_config
+from vfs import load_vfs
 
 
 def execute_command(line, source=""):
@@ -55,6 +56,13 @@ def main():
     args = read_args()
     show_config(args)
     vfs_name = Path(args.vfs).stem if args.vfs else "my-vfs"
+
+    try:
+        vfs = load_vfs(args.vfs)
+    except (OSError, ValueError) as error:
+        print(f"Ошибка загрузки VFS: {error}")
+        return 1
+    print(f"VFS в памяти: {vfs}")
 
     if args.script:
         try:
