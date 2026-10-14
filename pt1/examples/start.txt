@@ -1,4 +1,10 @@
 ls
+cd
+ls /
+ls /hello.txt "/home/student/docs/nested file.txt"
+cd /home/student/docs
+cd ..
+cd /
 cd "my documents"
 ls "file one.txt" 'file two.txt'
 
