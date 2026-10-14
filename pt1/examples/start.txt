@@ -1,0 +1,10 @@
+ls
+cd "my documents"
+ls "file one.txt" 'file two.txt'
+
+unknown
+cd "broken
+exit extra
+ls after-error
+exit
+ls after-exit

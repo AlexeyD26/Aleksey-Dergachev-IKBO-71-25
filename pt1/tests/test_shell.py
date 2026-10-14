@@ -8,7 +8,6 @@ MAIN_FILE = Path(__file__).resolve().parents[1] / "src" / "main.py"
 
 
 def run_shell(commands):
-    """Запускает эмулятор и возвращает его вывод."""
     result = subprocess.run(
         [sys.executable, str(MAIN_FILE)],
         input=commands,
@@ -21,10 +20,8 @@ def run_shell(commands):
 
 
 class ShellTests(unittest.TestCase):
-    """Проверяет поведение эмулятора первого этапа."""
 
     def test_commands_and_quotes(self):
-        """Проверяет заглушки и оба вида кавычек."""
         output = run_shell(
             "ls\n"
             "ls \"file one.txt\" 'file two.txt'\n"
@@ -36,7 +33,6 @@ class ShellTests(unittest.TestCase):
         self.assertIn("Команда: cd; аргументы: ['my documents']", output)
 
     def test_errors(self):
-        """Проверяет продолжение работы после ошибок."""
         output = run_shell('hello\ncd "broken\nexit extra\nls\nexit\n')
         self.assertIn("Неизвестная команда: hello", output)
         self.assertIn("Ошибка ввода:", output)
@@ -44,19 +40,16 @@ class ShellTests(unittest.TestCase):
         self.assertIn("Команда: ls", output)
 
     def test_empty_input(self):
-        """Проверяет пропуск пустых строк."""
         output = run_shell("\n   \nexit\n")
         self.assertNotIn("Неизвестная команда", output)
         self.assertNotIn("Ошибка", output)
 
     def test_exit(self):
-        """Проверяет завершение без выполнения следующих команд."""
         output = run_shell("exit\nhello\n")
         self.assertIn("Эмулятор завершён.", output)
         self.assertNotIn("Неизвестная команда: hello", output)
 
     def test_eof(self):
-        """Проверяет завершение при окончании входных данных."""
         output = run_shell("")
         self.assertIn("Эмулятор завершён.", output)
 
