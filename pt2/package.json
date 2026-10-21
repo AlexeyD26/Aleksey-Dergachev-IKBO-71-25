@@ -1,0 +1,17 @@
+{
+  "name": "cargo-deps-variant-7",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Вариант 7. Этап 1: чтение и проверка настроек YAML",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "yaml": "2.9.1"
+  }
+}
