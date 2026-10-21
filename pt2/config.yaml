@@ -1,0 +1,6 @@
+package: serde
+repository: https://crates.io
+test_mode: false
+version: "1.0.228"
+output: graph.png
+filter: ""
