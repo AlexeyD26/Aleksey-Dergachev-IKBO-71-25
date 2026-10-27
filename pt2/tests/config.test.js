@@ -14,7 +14,7 @@ const project = fileURLToPath(new URL('../', import.meta.url));
 const cli = join(project, 'src/index.js');
 const validConfig = {
   package: 'serde',
-  repository: 'https://crates.io',
+  repository: 'https://index.crates.io',
   test_mode: false,
   version: '1.0.228',
   output: 'graph.png',
@@ -108,7 +108,7 @@ test('Несуществующий файл настроек вызывает п
 });
 
 test('Тестовый файл ищется относительно YAML, а не текущей папки', () => {
-  writeFileSync(join(folder, 'repository.json'), '{}');
+  writeFileSync(join(folder, 'repository.json'), '{"A": ["B"]}');
   const config = {
     ...validConfig,
     package: 'A',
@@ -117,7 +117,7 @@ test('Тестовый файл ищется относительно YAML, а �
   };
   const result = runCli([saveConfig(config)], tmpdir());
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /test_mode: true/);
+  assert.match(result.stdout, /Прямые зависимости A:\n- B \[normal\]/);
 });
 
 test('Отсутствующий тестовый файл или папка вместо файла отклоняются', () => {
@@ -140,18 +140,14 @@ test('Папку нельзя использовать как выходной P
   assert.throws(() => loadConfig(saveConfig(config)), /недоступны/);
 });
 
-test('CLI выводит ровно шесть прочитанных значений', () => {
-  const result = runCli([saveConfig(validConfig)]);
-  const expected = Object.entries(validConfig)
-    .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
-    .join('\n') + '\n';
-  assert.equal(result.status, 0, result.stderr);
-  assert.equal(result.stdout, expected);
-  assert.equal(result.stderr, '');
-});
-
 test('Без аргументов используется config.yaml в текущей папке', () => {
-  saveConfig(validConfig);
+  writeFileSync(join(folder, 'repository.json'), '{"A": []}');
+  saveConfig({
+    ...validConfig,
+    package: 'A',
+    repository: 'repository.json',
+    test_mode: true,
+  });
   assert.equal(runCli([], folder).status, 0);
 });
 
