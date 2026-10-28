@@ -17,10 +17,11 @@ let repository;
 let responseStatus = 200;
 let requests = [];
 let body = '';
+const bodies = {};
 const server = createServer((request, response) => {
   requests.push(request.url);
   response.writeHead(responseStatus);
-  response.end(body);
+  response.end(bodies[request.url] ?? body);
 });
 
 before(async () => {
@@ -45,7 +46,8 @@ function runCli(version = '2.0.0') {
   return exec(process.execPath, [cli, configPath], { cwd: folder });
 }
 
-test('CLI получает данные по HTTP и выводит прямые зависимости', async () => {
+test('CLI получает граф по HTTP, применяет фильтр и обходит в глубину',
+  async () => {
   body = JSON.stringify({
     name: 'demo', vers: '2.0.0', deps: [
       { name: 'alpha', req: '^1', kind: null },
@@ -55,23 +57,35 @@ test('CLI получает данные по HTTP и выводит прямые
         target: 'cfg(windows)' },
     ],
   });
+  for (const [path, name, vers, deps] of [
+    ['/index/te/st/test', 'test', '2.1.0', [{ name: 'child', req: '^1' }]],
+    ['/index/ch/il/child', 'child', '1.0.0', []],
+    ['/index/2/cc', 'cc', '1.0.0', []],
+    ['/index/re/al/real', 'real', '3.0.0', []],
+  ]) {
+    bodies[path] = JSON.stringify({ name, vers, deps });
+  }
   const result = await runCli();
   assert.equal(result.stdout, [
-    'Прямые зависимости demo@2.0.0:',
-    '- alpha ^1 [normal]',
-    '- test ^2 [dev]',
-    '- cc ^1 [build]',
-    '- real =3.0.0 [normal, optional, cfg(windows), имя: alias]',
+    'Граф зависимостей demo@2.0.0:',
+    'demo@2.0.0 -> test@2.1.0, cc@1.0.0, real@3.0.0',
+    'test@2.1.0 -> child@1.0.0',
+    'child@1.0.0 -> (нет зависимостей)',
+    'cc@1.0.0 -> (нет зависимостей)',
+    'real@3.0.0 -> (нет зависимостей)',
     '',
   ].join('\n'));
   assert.equal(result.stderr, '');
-  assert.deepEqual(requests, ['/index/de/mo/demo']);
+  assert.deepEqual(requests, [
+    '/index/de/mo/demo', '/index/te/st/test', '/index/ch/il/child',
+    '/index/2/cc', '/index/re/al/real',
+  ]);
 });
 
 test('CLI явно сообщает об отсутствии зависимостей', async () => {
   body = JSON.stringify({ name: 'demo', vers: '2.0.0', deps: [] });
   const result = await runCli();
-  assert.match(result.stdout, /Прямых зависимостей нет/);
+  assert.match(result.stdout, /demo@2.0.0 -> \(нет зависимостей\)/);
 });
 
 test('CLI сообщает об отсутствующей версии с кодом 1', async () => {
