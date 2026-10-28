@@ -108,7 +108,7 @@ test('Несуществующий файл настроек вызывает п
 });
 
 test('Тестовый файл ищется относительно YAML, а не текущей папки', () => {
-  writeFileSync(join(folder, 'repository.json'), '{"A": ["B"]}');
+  writeFileSync(join(folder, 'repository.json'), '{"A": ["B"], "B": []}');
   const config = {
     ...validConfig,
     package: 'A',
@@ -117,7 +117,7 @@ test('Тестовый файл ищется относительно YAML, а �
   };
   const result = runCli([saveConfig(config)], tmpdir());
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /Прямые зависимости A:\n- B \[normal\]/);
+  assert.match(result.stdout, /Граф зависимостей A:\nA -> B\nB ->/);
 });
 
 test('Отсутствующий тестовый файл или папка вместо файла отклоняются', () => {

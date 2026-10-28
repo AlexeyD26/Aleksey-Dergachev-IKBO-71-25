@@ -2,7 +2,7 @@
   "name": "cargo-deps-variant-7",
   "version": "0.1.0",
   "private": true,
-  "description": "Вариант 7. Этап 2: прямые зависимости пакетов Cargo",
+  "description": "Вариант 7. Этап 3: граф зависимостей и DFS",
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
@@ -12,6 +12,7 @@
     "node": ">=22"
   },
   "dependencies": {
+    "semver": "7.8.5",
     "yaml": "2.9.1"
   }
 }

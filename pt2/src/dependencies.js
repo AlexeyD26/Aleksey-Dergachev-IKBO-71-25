@@ -5,13 +5,18 @@ const REQUEST_TIMEOUT = 10000;
 
 export async function getDependencies(config, configPath) {
   if (config.test_mode) {
-    return readTestDependencies(config, configPath);
+    const repository = readTestRepository(config, configPath);
+    return getTestDependencies(repository, config.package);
   }
 
-  const base = config.repository.replace(/\/$/, '') + '/';
-  const url = new URL(getIndexPath(config.package), base);
-  const text = await downloadIndex(url);
-  return parseDependencies(text, config.package, config.version);
+  const entries = await readIndex(config.repository, config.package);
+  return findDependencies(entries, config.package, config.version);
+}
+
+export async function readIndex(repository, packageName) {
+  const base = repository.replace(/\/$/, '') + '/';
+  const url = new URL(getIndexPath(packageName), base);
+  return parseIndex(await downloadIndex(url));
 }
 
 export function getIndexPath(packageName) {
@@ -46,13 +51,18 @@ async function downloadIndex(url) {
 }
 
 export function parseDependencies(text, packageName, version) {
-  let entries;
+  return findDependencies(parseIndex(text), packageName, version);
+}
+
+function parseIndex(text) {
   try {
-    entries = text.trim().split(/\r?\n/).map((line) => JSON.parse(line));
+    return text.trim().split(/\r?\n/).map((line) => JSON.parse(line));
   } catch {
     throw new Error('Репозиторий вернул некорректный JSON.');
   }
+}
 
+function findDependencies(entries, packageName, version) {
   const entry = entries.find((item) =>
     typeof item?.name === 'string'
     && item.name.toLowerCase() === packageName.toLowerCase()
@@ -61,6 +71,10 @@ export function parseDependencies(text, packageName, version) {
   if (!entry) {
     throw new Error(`Версия ${packageName}@${version} не найдена.`);
   }
+  return getPackageDependencies(entry);
+}
+
+export function getPackageDependencies(entry) {
   if (!Array.isArray(entry.deps) || !entry.deps.every(isDependency)) {
     throw new Error('Некорректный список зависимостей в репозитории.');
   }
@@ -76,7 +90,7 @@ function isDependency(dependency) {
     && dependency.req.length > 0;
 }
 
-function readTestDependencies(config, configPath) {
+export function readTestRepository(config, configPath) {
   const path = resolve(dirname(resolve(configPath)), config.repository);
   let repository;
   try {
@@ -85,15 +99,25 @@ function readTestDependencies(config, configPath) {
     throw new Error('Не удалось прочитать тестовый репозиторий как JSON.');
   }
 
-  if (!repository || !Object.hasOwn(repository, config.package)) {
-    throw new Error(`Пакет ${config.package} не найден в тестовом файле.`);
+  if (!repository || typeof repository !== 'object'
+    || Array.isArray(repository)) {
+    throw new Error('Тестовый репозиторий должен быть JSON-объектом.');
   }
-  const names = repository[config.package];
-  const valid = Array.isArray(names) && names.every((name) =>
-    typeof name === 'string' && /^[A-Z]$/.test(name),
-  );
-  if (!valid) {
-    throw new Error('Зависимости тестового пакета должны быть буквами A-Z.');
+  for (const [name, names] of Object.entries(repository)) {
+    const valid = /^[A-Z]$/.test(name) && Array.isArray(names)
+      && names.every((item) => typeof item === 'string'
+        && /^[A-Z]$/.test(item));
+    if (!valid) {
+      throw new Error('В тестовом репозитории нужны имена A-Z и массивы.');
+    }
   }
+  return repository;
+}
+
+export function getTestDependencies(repository, packageName) {
+  if (!Object.hasOwn(repository, packageName)) {
+    throw new Error(`Пакет ${packageName} не найден в тестовом файле.`);
+  }
+  const names = repository[packageName];
   return names.map((name) => ({ name, req: '', kind: 'normal' }));
 }

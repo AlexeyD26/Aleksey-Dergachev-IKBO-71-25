@@ -1,5 +1,5 @@
 import { loadConfig } from './config.js';
-import { getDependencies } from './dependencies.js';
+import { buildGraph } from './graph.js';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -15,28 +15,25 @@ async function main() {
 
   const configPath = args[0] ?? 'config.yaml';
   const config = loadConfig(configPath);
-  const dependencies = await getDependencies(config, configPath);
-  printDependencies(config, dependencies);
+  const graph = await buildGraph(config, configPath);
+  printGraph(config, graph);
 }
 
-function printDependencies(config, dependencies) {
+function printGraph(config, graph) {
   const name = config.test_mode
     ? config.package
     : `${config.package}@${config.version}`;
-  console.log(`Прямые зависимости ${name}:`);
-  if (dependencies.length === 0) {
-    console.log('Прямых зависимостей нет.');
+  console.log(`Граф зависимостей ${name}:`);
+  if (graph.size === 0) {
+    console.log('Пакет исключён фильтром.');
     return;
   }
 
-  for (const dependency of dependencies) {
-    const name = dependency.package ?? dependency.name;
-    const details = [dependency.kind ?? 'normal'];
-    if (dependency.optional) details.push('optional');
-    if (dependency.target) details.push(dependency.target);
-    if (dependency.package) details.push(`имя: ${dependency.name}`);
-    const label = `${name} ${dependency.req}`.trim();
-    console.log(`- ${label} [${details.join(', ')}]`);
+  for (const [node, dependencies] of graph) {
+    const targets = dependencies.length > 0
+      ? dependencies.join(', ')
+      : '(нет зависимостей)';
+    console.log(`${node} -> ${targets}`);
   }
 }
 
