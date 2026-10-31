@@ -37,13 +37,15 @@ after(async () => {
   rmSync(folder, { recursive: true, force: true });
 });
 
-function runCli(version = '2.0.0') {
+function runCli(version = '2.0.0', extraArgs = []) {
   writeFileSync(configPath, stringify({
     package: 'demo', repository, test_mode: false,
     version, output: 'graph.png', filter: 'alpha',
   }));
   requests = [];
-  return exec(process.execPath, [cli, configPath], { cwd: folder });
+  return exec(process.execPath, [cli, configPath, ...extraArgs], {
+    cwd: folder,
+  });
 }
 
 test('CLI получает граф по HTTP, применяет фильтр и обходит в глубину',
@@ -81,6 +83,21 @@ test('CLI получает граф по HTTP, применяет фильтр �
     '/index/2/cc', '/index/re/al/real',
   ]);
 });
+
+test('CLI ищет обратные зависимости пакета с версией из HTTP-индекса',
+  async () => {
+    body = JSON.stringify({
+      name: 'demo', vers: '2.0.0', deps: [{ name: 'child', req: '^1' }],
+    });
+    bodies['/index/ch/il/child'] = JSON.stringify({
+      name: 'child', vers: '1.0.0', deps: [],
+    });
+    const result = await runCli('2.0.0', ['--reverse', 'child@1.0.0']);
+    assert.equal(result.stdout,
+      'Обратные зависимости child@1.0.0:\n- demo@2.0.0\n');
+    assert.equal(result.stderr, '');
+    assert.deepEqual(requests, ['/index/de/mo/demo', '/index/ch/il/child']);
+  });
 
 test('CLI явно сообщает об отсутствии зависимостей', async () => {
   body = JSON.stringify({ name: 'demo', vers: '2.0.0', deps: [] });
