@@ -1,6 +1,7 @@
 import { loadConfig } from './config.js';
 import { buildGraph } from './graph.js';
 import { findReverseDependencies } from './reverse.js';
+import { saveVisualization } from './visualization.js';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -16,7 +17,10 @@ async function main() {
   if (reverseTarget !== null) {
     printReverse(findReverseDependencies(graph, reverseTarget));
   } else {
+    const files = await saveVisualization(graph, config, configPath);
     printGraph(config, graph);
+    console.log(`Mermaid: ${files.mermaidPath}`);
+    console.log(`PNG: ${files.pngPath}`);
   }
 }
 

@@ -1,0 +1,2 @@
+adler2 v2.0.1
+`-- rustc-std-workspace-core v1.0.1

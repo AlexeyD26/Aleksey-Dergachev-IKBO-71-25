@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -68,7 +68,7 @@ test('CLI получает граф по HTTP, применяет фильтр �
     bodies[path] = JSON.stringify({ name, vers, deps });
   }
   const result = await runCli();
-  assert.equal(result.stdout, [
+  assert.ok(result.stdout.startsWith([
     'Граф зависимостей demo@2.0.0:',
     'demo@2.0.0 -> test@2.1.0, cc@1.0.0, real@3.0.0',
     'test@2.1.0 -> child@1.0.0',
@@ -76,7 +76,11 @@ test('CLI получает граф по HTTP, применяет фильтр �
     'cc@1.0.0 -> (нет зависимостей)',
     'real@3.0.0 -> (нет зависимостей)',
     '',
-  ].join('\n'));
+  ].join('\n')));
+  const png = readFileSync(join(folder, 'graph.png'));
+  assert.equal(png.subarray(1, 4).toString(), 'PNG');
+  assert.match(result.stdout, /Mermaid: .*graph\.mmd/);
+  assert.match(result.stdout, /PNG: .*graph\.png/);
   assert.equal(result.stderr, '');
   assert.deepEqual(requests, [
     '/index/de/mo/demo', '/index/te/st/test', '/index/ch/il/child',
