@@ -42,8 +42,8 @@ test('PNG и Mermaid создаются относительно файла на
   assert.equal(readFileSync(files.mermaidPath, 'utf8'), createMermaid(graph));
   const png = readFileSync(files.pngPath);
   assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
-  assert.ok(png.readUInt32BE(16) > 0);
-  assert.ok(png.readUInt32BE(20) > 0);
+  assert.ok(png.readUInt32BE(16));
+  assert.ok(png.readUInt32BE(20));
 });
 
 test('Генерация не перезаписывает файл настроек', async () => {

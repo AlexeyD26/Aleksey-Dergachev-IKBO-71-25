@@ -17,7 +17,7 @@ export function createMermaid(graph) {
     ids.set(node, id);
     lines.push(`  ${id}["${escapeLabel(node)}"]`);
   }
-  if (graph.size === 0) lines.push('  empty["Пакет исключён фильтром"]');
+  if (!graph.size) lines.push('  empty["Пакет исключён фильтром"]');
   for (const [node, dependencies] of graph) {
     for (const dependency of dependencies) {
       lines.push(`  ${ids.get(node)} --> ${ids.get(dependency)}`);

@@ -3,10 +3,13 @@ import { buildGraph } from './graph.js';
 import { findReverseDependencies } from './reverse.js';
 import { saveVisualization } from './visualization.js';
 
+const HELP_ARGUMENT_COUNT = 1;
+const MAX_CONFIG_PATHS = 1;
+
 async function main() {
   const args = process.argv.slice(2);
 
-  if (args.length === 1 && args[0] === '--help') {
+  if (args.length === HELP_ARGUMENT_COUNT && args[0] === '--help') {
     console.log('Запуск: node src/index.js [config.yaml] [--reverse пакет]');
     return;
   }
@@ -26,9 +29,9 @@ async function main() {
 
 function readArgs(args) {
   const remaining = [...args];
-  const position = remaining.indexOf('--reverse');
   let reverseTarget = null;
-  if (position !== -1) {
+  if (remaining.includes('--reverse')) {
+    const position = remaining.indexOf('--reverse');
     reverseTarget = remaining[position + 1];
     if (!reverseTarget?.trim() || reverseTarget.startsWith('--')) {
       throw new Error('После --reverse укажите пакет.');
@@ -37,7 +40,7 @@ function readArgs(args) {
   }
   const unknown = remaining.find((arg) => arg.startsWith('--'));
   if (unknown) throw new Error(`Неизвестная опция: ${unknown}`);
-  if (remaining.length > 1) {
+  if (remaining.length > MAX_CONFIG_PATHS) {
     throw new Error('Нужно указать только один путь к YAML-файлу.');
   }
   return { configPath: remaining[0] ?? 'config.yaml', reverseTarget };
@@ -48,13 +51,13 @@ function printGraph(config, graph) {
     ? config.package
     : `${config.package}@${config.version}`;
   console.log(`Граф зависимостей ${name}:`);
-  if (graph.size === 0) {
+  if (!graph.size) {
     console.log('Пакет исключён фильтром.');
     return;
   }
 
   for (const [node, dependencies] of graph) {
-    const targets = dependencies.length > 0
+    const targets = dependencies.length
       ? dependencies.join(', ')
       : '(нет зависимостей)';
     console.log(`${node} -> ${targets}`);
@@ -63,7 +66,7 @@ function printGraph(config, graph) {
 
 function printReverse(result) {
   console.log(`Обратные зависимости ${result.target}:`);
-  if (result.packages.length === 0) {
+  if (!result.packages.length) {
     console.log('Обратных зависимостей нет.');
   }
   for (const name of result.packages) console.log(`- ${name}`);

@@ -1,3 +1,5 @@
+const UNIQUE_MATCH_COUNT = 1;
+
 export function findReverseDependencies(graph, target) {
   const selected = findTarget(graph, target);
   const reversed = reverseEdges(graph);
@@ -5,7 +7,7 @@ export function findReverseDependencies(graph, target) {
   const visited = new Set();
   const packages = [];
 
-  while (stack.length > 0) {
+  while (stack.length) {
     const node = stack.pop();
     if (visited.has(node)) continue;
     visited.add(node);
@@ -34,8 +36,8 @@ function findTarget(graph, target) {
     const name = node.replace(' [yanked]', '');
     return name === target || name.split('@')[0] === target;
   });
-  if (matches.length === 1) return matches[0];
-  if (matches.length > 1) {
+  if (matches.length === UNIQUE_MATCH_COUNT) return matches[0];
+  if (matches.length > UNIQUE_MATCH_COUNT) {
     throw new Error(`Укажите версию пакета: ${matches.join(', ')}`);
   }
   throw new Error(`Пакет ${target} не найден в построенном графе.`);

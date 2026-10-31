@@ -2,6 +2,9 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
 const REQUEST_TIMEOUT = 10000;
+const SHORT_NAME_MAX_LENGTH = 2;
+const THREE_LETTER_NAME_LENGTH = 3;
+const HTTP_NOT_FOUND = 404;
 
 export async function getDependencies(config, configPath) {
   if (config.test_mode) {
@@ -21,8 +24,10 @@ export async function readIndex(repository, packageName) {
 
 export function getIndexPath(packageName) {
   const name = packageName.toLowerCase();
-  if (name.length <= 2) return `${name.length}/${name}`;
-  if (name.length === 3) return `3/${name[0]}/${name}`;
+  if (name.length <= SHORT_NAME_MAX_LENGTH) return `${name.length}/${name}`;
+  if (name.length === THREE_LETTER_NAME_LENGTH) {
+    return `3/${name[0]}/${name}`;
+  }
   return `${name.slice(0, 2)}/${name.slice(2, 4)}/${name}`;
 }
 
@@ -32,7 +37,7 @@ async function downloadIndex(url) {
       signal: AbortSignal.timeout(REQUEST_TIMEOUT),
     });
 
-    if (response.status === 404) {
+    if (response.status === HTTP_NOT_FOUND) {
       throw new Error('Пакет не найден в репозитории (HTTP 404).');
     }
     if (!response.ok) {
@@ -85,9 +90,9 @@ function isDependency(dependency) {
   return dependency !== null
     && typeof dependency === 'object'
     && typeof dependency.name === 'string'
-    && dependency.name.length > 0
+    && dependency.name !== ''
     && typeof dependency.req === 'string'
-    && dependency.req.length > 0;
+    && dependency.req !== '';
 }
 
 export function readTestRepository(config, configPath) {
