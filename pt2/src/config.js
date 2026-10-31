@@ -3,6 +3,7 @@ import {
 } from 'node:fs';
 import { dirname, extname, resolve } from 'node:path';
 import { parse } from 'yaml';
+import { valid } from 'semver';
 
 const FIELDS = [
   'package', 'repository', 'test_mode', 'version', 'output', 'filter',
@@ -77,24 +78,9 @@ function validateValues(config) {
 }
 
 function isVersion(version) {
-  const match = version.match(
-    /^(\d+)\.(\d+)\.(\d+)(?:-([\w.-]+))?(?:\+([\w.-]+))?$/,
-  );
-  if (!match) return false;
-
-  const numbers = match.slice(1, 4);
-  if (numbers.some((part) => !/^(0|[1-9]\d*)$/.test(part))) {
-    return false;
-  }
-
-  for (const suffix of [match[4], match[5]]) {
-    if (suffix && !/^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*$/.test(suffix)) {
-      return false;
-    }
-  }
-
-  const prerelease = match[4]?.split('.') ?? [];
-  return !prerelease.some((part) => /^0\d+$/.test(part));
+  return /^\d/.test(version)
+    && version.trim() === version
+    && valid(version) !== null;
 }
 
 function validateRepository(config, folder) {
