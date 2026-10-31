@@ -233,7 +233,7 @@ Cargo и библиотеки для получения зависимостей
 Используемые сторонние пакеты:
 
 - [yaml](https://eemeli.org/yaml/) читает настройки.
-- [semver](https://github.com/npm/node-semver) только сравнивает версии.
+- [semver](https://github.com/npm/node-semver) проверяет и сравнивает версии.
 - [Mermaid CLI](https://github.com/mermaid-js/mermaid-cli) рисует PNG
   по тексту Mermaid; информацию о зависимостях он не получает.
 
@@ -371,6 +371,9 @@ HTTP проверяется на локальном сервере `127.0.0.1`.
 `validateValues` — значения, `isVersion` — формат версии,
 `validateRepository` — URL или доступность файла,
 `validateOutput` — путь к изображению.
+
+`isVersion` использует уже подключённый `semver`, проверяет начало с цифры
+и отсутствие пробелов по краям. Отдельного разбора компонентов версии нет.
 
 В `dependencies.js` функция `getIndexPath` строит путь к пакету,
 `downloadIndex` скачивает файл, `parseIndex` разбирает строки JSON,
