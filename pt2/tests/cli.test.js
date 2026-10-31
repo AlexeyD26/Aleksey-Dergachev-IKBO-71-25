@@ -50,43 +50,43 @@ function runCli(version = '2.0.0', extraArgs = []) {
 
 test('CLI получает граф по HTTP, применяет фильтр и обходит в глубину',
   async () => {
-  body = JSON.stringify({
-    name: 'demo', vers: '2.0.0', deps: [
-      { name: 'alpha', req: '^1', kind: null },
-      { name: 'test', req: '^2', kind: 'dev' },
-      { name: 'cc', req: '^1', kind: 'build' },
-      { name: 'alias', package: 'real', req: '=3.0.0', optional: true,
-        target: 'cfg(windows)' },
-    ],
+    body = JSON.stringify({
+      name: 'demo', vers: '2.0.0', deps: [
+        { name: 'alpha', req: '^1', kind: null },
+        { name: 'test', req: '^2', kind: 'dev' },
+        { name: 'cc', req: '^1', kind: 'build' },
+        { name: 'alias', package: 'real', req: '=3.0.0', optional: true,
+          target: 'cfg(windows)' },
+      ],
+    });
+    for (const [path, name, vers, deps] of [
+      ['/index/te/st/test', 'test', '2.1.0', [{ name: 'child', req: '^1' }]],
+      ['/index/ch/il/child', 'child', '1.0.0', []],
+      ['/index/2/cc', 'cc', '1.0.0', []],
+      ['/index/re/al/real', 'real', '3.0.0', []],
+    ]) {
+      bodies[path] = JSON.stringify({ name, vers, deps });
+    }
+    const result = await runCli();
+    assert.ok(result.stdout.startsWith([
+      'Граф зависимостей demo@2.0.0:',
+      'demo@2.0.0 -> test@2.1.0, cc@1.0.0, real@3.0.0',
+      'test@2.1.0 -> child@1.0.0',
+      'child@1.0.0 -> (нет зависимостей)',
+      'cc@1.0.0 -> (нет зависимостей)',
+      'real@3.0.0 -> (нет зависимостей)',
+      '',
+    ].join('\n')));
+    const png = readFileSync(join(folder, 'graph.png'));
+    assert.equal(png.subarray(1, 4).toString(), 'PNG');
+    assert.match(result.stdout, /Mermaid: .*graph\.mmd/);
+    assert.match(result.stdout, /PNG: .*graph\.png/);
+    assert.equal(result.stderr, '');
+    assert.deepEqual(requests, [
+      '/index/de/mo/demo', '/index/te/st/test', '/index/ch/il/child',
+      '/index/2/cc', '/index/re/al/real',
+    ]);
   });
-  for (const [path, name, vers, deps] of [
-    ['/index/te/st/test', 'test', '2.1.0', [{ name: 'child', req: '^1' }]],
-    ['/index/ch/il/child', 'child', '1.0.0', []],
-    ['/index/2/cc', 'cc', '1.0.0', []],
-    ['/index/re/al/real', 'real', '3.0.0', []],
-  ]) {
-    bodies[path] = JSON.stringify({ name, vers, deps });
-  }
-  const result = await runCli();
-  assert.ok(result.stdout.startsWith([
-    'Граф зависимостей demo@2.0.0:',
-    'demo@2.0.0 -> test@2.1.0, cc@1.0.0, real@3.0.0',
-    'test@2.1.0 -> child@1.0.0',
-    'child@1.0.0 -> (нет зависимостей)',
-    'cc@1.0.0 -> (нет зависимостей)',
-    'real@3.0.0 -> (нет зависимостей)',
-    '',
-  ].join('\n')));
-  const png = readFileSync(join(folder, 'graph.png'));
-  assert.equal(png.subarray(1, 4).toString(), 'PNG');
-  assert.match(result.stdout, /Mermaid: .*graph\.mmd/);
-  assert.match(result.stdout, /PNG: .*graph\.png/);
-  assert.equal(result.stderr, '');
-  assert.deepEqual(requests, [
-    '/index/de/mo/demo', '/index/te/st/test', '/index/ch/il/child',
-    '/index/2/cc', '/index/re/al/real',
-  ]);
-});
 
 test('CLI ищет обратные зависимости пакета с версией из HTTP-индекса',
   async () => {

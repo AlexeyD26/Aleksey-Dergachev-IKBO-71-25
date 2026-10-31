@@ -6,7 +6,10 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "test": "node --test"
+    "test": "node --test",
+    "lint": "npx --yes eslint@10.14.0 .",
+    "check:repo": "node scripts/check-repository.js",
+    "check": "npm run lint && npm run check:repo && npm test"
   },
   "engines": {
     "node": ">=22.13.0"

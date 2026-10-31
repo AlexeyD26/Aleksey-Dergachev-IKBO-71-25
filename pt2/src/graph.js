@@ -8,7 +8,7 @@ export async function buildGraph(config, configPath) {
     name: config.package, req: config.version, exact: true, parent: null,
   }];
 
-  while (stack.length > 0) {
+  while (stack.length) {
     const item = stack.pop();
     if (isExcluded(item.name, config.filter)) continue;
     if (item.registry && item.registry !== config.repository) {
