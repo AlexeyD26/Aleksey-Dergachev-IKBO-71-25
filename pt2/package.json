@@ -2,17 +2,21 @@
   "name": "cargo-deps-variant-7",
   "version": "0.1.0",
   "private": true,
-  "description": "Вариант 7. Этап 4: обратные зависимости",
+  "description": "Вариант 7. Этап 5: Mermaid и PNG",
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
     "test": "node --test"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13.0"
   },
   "dependencies": {
+    "@mermaid-js/mermaid-cli": "12.0.0",
     "semver": "7.8.5",
     "yaml": "2.9.1"
+  },
+  "allowScripts": {
+    "puppeteer@25.16.0": true
   }
 }

@@ -1,6 +1,7 @@
 node_modules/
 coverage/
 *.png
+*.mmd
 *.log
 .DS_Store
 .idea/

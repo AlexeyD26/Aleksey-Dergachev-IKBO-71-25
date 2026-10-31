@@ -1,0 +1,6 @@
+package: tinyvec_macros
+repository: https://index.crates.io
+test_mode: false
+version: "0.1.1"
+output: tinyvec-macros.png
+filter: ""

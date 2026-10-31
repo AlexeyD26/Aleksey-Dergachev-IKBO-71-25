@@ -1,0 +1,6 @@
+package: adler2
+repository: https://index.crates.io
+test_mode: false
+version: "2.0.1"
+output: adler2.png
+filter: ""

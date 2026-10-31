@@ -1,0 +1,6 @@
+package: cfg-if
+repository: https://index.crates.io
+test_mode: false
+version: "1.0.4"
+output: cfg-if.png
+filter: ""
