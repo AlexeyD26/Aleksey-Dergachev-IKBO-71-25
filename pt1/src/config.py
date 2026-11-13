@@ -1,5 +1,5 @@
 import argparse
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as et
 
 
 def read_args():
@@ -13,7 +13,7 @@ def read_args():
 
     try:
         return load_config(parser.parse_args())
-    except (OSError, ET.ParseError, ValueError, LookupError) as error:
+    except (OSError, et.ParseError, ValueError, LookupError) as error:
         parser.error(f"Ошибка чтения XML-конфигурации: {error}")
 
 
@@ -27,7 +27,7 @@ def load_config(args):
     if args.config is None:
         return args
 
-    root = ET.parse(args.config).getroot()
+    root = et.parse(args.config).getroot()
 
     if root.tag != "config":
         raise ValueError("Ожидается корневой элемент <config>.")

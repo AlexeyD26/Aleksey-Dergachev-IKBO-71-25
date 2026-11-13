@@ -63,7 +63,7 @@ function checkFile(name) {
 }
 
 function checkCommits() {
-  const subjects = git(['log', '--format=%s', '--', '.']).trim().split('\n');
+  const subjects = git(['log', '--format=%s']).trim().split('\n');
   for (const subject of subjects) {
     if (!COMMIT_PATTERN.test(subject)) {
       throw new Error(`Неверный формат коммита: ${subject}`);

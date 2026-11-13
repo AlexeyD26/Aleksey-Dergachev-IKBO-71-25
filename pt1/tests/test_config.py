@@ -10,7 +10,7 @@ MAIN_FILE = Path(__file__).resolve().parents[1] / "src" / "main.py"
 
 class ConfigTests(unittest.TestCase):
 
-    def setUp(self):
+    def prepare_files(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.folder = Path(self.temp.name)
@@ -35,6 +35,7 @@ class ConfigTests(unittest.TestCase):
         )
 
     def test_xml_settings(self):
+        self.prepare_files()
         result = self.run_shell(["--config", str(self.config)])
         self.assertEqual(result.returncode, 0)
         self.assertIn("VFS: from config.json", result.stdout)
@@ -44,6 +45,7 @@ class ConfigTests(unittest.TestCase):
         self.assertIn("Команда: ls; аргументы: ['from-script']", result.stdout)
 
     def test_vfs_priority(self):
+        self.prepare_files()
         result = self.run_shell([
             "--config", str(self.config), "--vfs", "from-cli.json"
         ])
@@ -53,6 +55,7 @@ class ConfigTests(unittest.TestCase):
         self.assertIn("from-cli> ls from-script", result.stdout)
 
     def test_script_priority(self):
+        self.prepare_files()
         script = self.folder / "other.txt"
         script.write_text("cd from-cli\nexit\n", encoding="utf-8")
         result = self.run_shell([
@@ -65,6 +68,7 @@ class ConfigTests(unittest.TestCase):
         self.assertNotIn("Команда: ls", result.stdout)
 
     def test_both_priorities(self):
+        self.prepare_files()
         self.config.write_text(
             "<config><vfs>old.json</vfs>"
             "<script>missing.txt</script></config>", encoding="utf-8"
@@ -79,6 +83,7 @@ class ConfigTests(unittest.TestCase):
         self.assertIn("Команда: ls", result.stdout)
 
     def test_config_errors(self):
+        self.prepare_files()
         broken = self.folder / "broken.xml"
         broken.write_text("<config>", encoding="utf-8")
         wrong_root = self.folder / "wrong-root.xml"
@@ -91,6 +96,7 @@ class ConfigTests(unittest.TestCase):
                 self.assertNotIn("Traceback", result.stderr)
 
     def test_empty_config(self):
+        self.prepare_files()
         self.config.write_text("<config/>", encoding="utf-8")
         result = self.run_shell(["--config", str(self.config)], "exit\n")
         self.assertEqual(result.returncode, 0)
@@ -99,6 +105,7 @@ class ConfigTests(unittest.TestCase):
         self.assertIn("my-vfs>", result.stdout)
 
     def test_script_errors_and_exit(self):
+        self.prepare_files()
         self.script.write_text(
             "ls\nunknown\ncd \"broken\nexit extra\n\n"
             "cd \"my documents\"\nls after-error\nexit\nls after-exit\n",
@@ -118,6 +125,7 @@ class ConfigTests(unittest.TestCase):
         self.assertNotIn("unknown-from-input", result.stdout)
 
     def test_script_file_errors(self):
+        self.prepare_files()
         bad_script = self.folder / "bad.txt"
         bad_script.write_bytes(b"\xff\xfe")
         for path in [self.folder / "missing.txt", bad_script]:
@@ -128,6 +136,7 @@ class ConfigTests(unittest.TestCase):
                 self.assertNotIn("Traceback", result.stderr)
 
     def test_repl_after_script(self):
+        self.prepare_files()
         self.script.write_text("ls from-script\n", encoding="utf-8")
         result = self.run_shell(
             ["--script", str(self.script)], "cd from-input\nexit\n"

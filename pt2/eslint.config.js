@@ -14,14 +14,13 @@ const numericComparisons = {
     messages: { constant: 'Используйте именованную константу в сравнении.' },
   },
   create(context) {
-    return {
-      BinaryExpression(node) {
-        if (comparisons.has(node.operator)
-          && [node.left, node.right].some(isNumericLiteral)) {
-          context.report({ node, messageId: 'constant' });
-        }
-      },
-    };
+    function checkComparison(node) {
+      if (comparisons.has(node.operator)
+        && [node.left, node.right].some(isNumericLiteral)) {
+        context.report({ node, messageId: 'constant' });
+      }
+    }
+    return { 'BinaryExpression': checkComparison };
   },
 };
 
@@ -31,13 +30,12 @@ const noComments = {
     messages: { comment: 'Описание функций хранится в README.' },
   },
   create(context) {
-    return {
-      Program() {
-        for (const comment of context.sourceCode.getAllComments()) {
-          context.report({ loc: comment.loc, messageId: 'comment' });
-        }
-      },
-    };
+    function checkComments() {
+      for (const comment of context.sourceCode.getAllComments()) {
+        context.report({ loc: comment.loc, messageId: 'comment' });
+      }
+    }
+    return { 'Program': checkComments };
   },
 };
 

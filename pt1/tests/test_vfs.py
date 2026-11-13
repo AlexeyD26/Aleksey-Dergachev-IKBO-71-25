@@ -13,7 +13,7 @@ from vfs import load_vfs
 
 
 class VfsTests(unittest.TestCase):
-    def setUp(self):
+    def prepare_files(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.folder = Path(self.temp.name)
@@ -24,10 +24,12 @@ class VfsTests(unittest.TestCase):
         return self.path
 
     def test_minimal_and_default(self):
+        self.prepare_files()
         self.assertEqual(load_vfs(None), {})
         self.assertEqual(load_vfs(self.write_vfs({})), {})
 
     def test_files_stay_in_memory(self):
+        self.prepare_files()
         data = b"\x00\x01\x02\xff"
         self.write_vfs({
             "binary.bin": base64.b64encode(data).decode(),
@@ -44,6 +46,7 @@ class VfsTests(unittest.TestCase):
         self.assertEqual(set(self.folder.iterdir()), before_files)
 
     def test_nested_folders(self):
+        self.prepare_files()
         path = self.write_vfs({
             "home": {"student": {"docs": {"note.txt": "Tm90ZXMK"}}},
             "empty": {},
@@ -54,24 +57,28 @@ class VfsTests(unittest.TestCase):
         self.assertFalse((self.folder / "home").exists())
 
     def test_invalid_root(self):
+        self.prepare_files()
         for data in [[], "text", None]:
             with self.subTest(data=data):
                 with self.assertRaises(ValueError):
                     load_vfs(self.write_vfs(data))
 
     def test_invalid_file_data(self):
+        self.prepare_files()
         for data in ["invalid!", "привет", 123, [], None]:
             with self.subTest(data=data):
                 with self.assertRaises(ValueError):
                     load_vfs(self.write_vfs({"file.txt": data}))
 
     def test_invalid_names(self):
+        self.prepare_files()
         for name in ["", ".", "..", "a/b", "\0"]:
             with self.subTest(name=name):
                 with self.assertRaises(ValueError):
                     load_vfs(self.write_vfs({name: ""}))
 
     def test_startup_errors(self):
+        self.prepare_files()
         self.path.write_text("{broken", encoding="utf-8")
         bad_base64 = self.folder / "bad.json"
         bad_base64.write_text('{"file.txt": "!"}', encoding="utf-8")
@@ -91,6 +98,7 @@ class VfsTests(unittest.TestCase):
                 self.assertNotIn("Команда: ls", result.stdout)
 
     def test_example_files(self):
+        self.prepare_files()
         folder = PROJECT_DIR / "examples" / "vfs"
         self.assertEqual(load_vfs(folder / "minimal.json"), {})
         files = load_vfs(folder / "files.json")
