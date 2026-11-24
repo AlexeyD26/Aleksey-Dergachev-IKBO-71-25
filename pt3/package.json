@@ -1,0 +1,12 @@
+{
+  "name": "config-translator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "peggy --format es -o src/parser.generated.js src/parser.peggy"
+  },
+  "devDependencies": {
+    "peggy": "5.1.1"
+  }
+}

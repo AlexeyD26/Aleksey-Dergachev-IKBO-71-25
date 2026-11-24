@@ -1,0 +1,3 @@
+node_modules/
+src/parser.generated.js
+.DS_Store
