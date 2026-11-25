@@ -21,7 +21,7 @@ Text
   = "[[" content:$(!"]]" .)* "]]" { return content; }
 
 Decimal
-  = digits:$([+-]? [0-9]+ "." [0-9]+) { return Number(digits); }
+  = digits:$([+-]? [0-9]+ "." [0-9]+) { return { decimal: digits }; }
 
 Reference
   = "${" name:Name "}" { return { reference: name }; }
